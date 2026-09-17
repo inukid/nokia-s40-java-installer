@@ -80,8 +80,8 @@ command -v jadmaker
 7. Note the Nokia's Bluetooth MAC address, then pair and trust it. Replace the example address with the address found during scanning:
 
    ```text
-   pair 00:14:A7:69:9B:63
-   trust 00:14:A7:69:9B:63
+   pair 00:14:A7:xx:xx:xx
+   trust 00:14:A7:xx:xx:xx
    quit
    ```
 
@@ -94,7 +94,7 @@ Create `~/.gammurc` and replace the example MAC address with your phone's addres
 ```bash
 cat > ~/.gammurc <<'EOF'
 [gammu]
-device = 00:14:A7:69:9B:63
+device = 00:14:A7:xx:xx:xx
 connection = bluephonet
 EOF
 ```
