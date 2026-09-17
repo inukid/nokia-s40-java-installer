@@ -3,16 +3,15 @@ The JAR downloaded successfully but failed to install on the Nokia 6230i with a 
 
 # Nokia 6230i (Series 40) Java Game Installer for Linux
 
-A lightweight guide and workflow for installing Java MIDlets (`.jar`/`.jad`) onto the **Nokia 6230i** (and other Nokia Series 40 2nd Edition devices) using Linux via Bluetooth.
+A lightweight guide and workflow for sideloading Java MIDlets (`.jar` / `.jad`) onto the **Nokia 6230i** (and other Nokia Series 40 2nd Edition devices) using Linux via Bluetooth.
 
 ---
 
-## The Problem
+## Background & Issues Solved
 
-1. **Native Browser Buffer Limit:** The built-in WAP browser stages downloads in a small RAM cache (~100 KB–256 KB), causing `Out of memory` or `Insufficient memory` errors even with 20 MB+ free storage.
-2. **OBEX Push Fallback:** Sending a `.jar` via generic Bluetooth push saves it to the **Gallery**, triggering `File format not supported` because S40 cannot execute raw archives from the file browser.
-
-Using **Gammu** bypasses these bottlenecks by pushing the MIDlet directly to the phone's internal Java application manager.
+* **Browser Cache Bottleneck:** Attempting to download games over-the-air using the phone's native WAP browser causes a `Not enough phone memory to download file` or `Insufficient memory` error. The built-in browser stages incoming files in a tiny internal RAM cache (~100 KB–256 KB) before saving, even if the device has 20 MB+ of free local storage.
+* **Bluetooth OBEX Misrouting:** Sending a raw `.jar` via generic desktop Bluetooth Object Push routes the archive into the phone's **Gallery** as generic data. Attempting to open it results in `File format not supported` because Series 40 cannot launch executables from the file manager.
+* **The Solution:** Using **Gammu** on Linux communicates directly with the phone's Java Application Manager, bypassing browser memory limits and properly registering the MIDlet into the **Games** or **Applications** menu.
 
 ---
 
@@ -26,105 +25,15 @@ Using **Gammu** bypasses these bottlenecks by pushing the MIDlet directly to the
 | **Java Profile** | MIDP 2.0 / CLDC 1.1 |
 
 > [!WARNING]
-> Keep `.jar` files strictly under **512 KB**. Anything larger will fail to install or launch. Target **208×208** builds to avoid scaling artifacts and runtime out-of-memory errors.
+> Keep `.jar` files strictly under **512 KB**. Files exceeding this limit will fail to install or crash with an `Out of Memory` exception. For optimal display, target builds designed for **208×208** screens.
 
 ---
 
 ## 1. Prerequisites
 
-Install `gammu` and the BlueZ Bluetooth stack:
+Install `gammu` and the BlueZ Bluetooth stack for your Linux distribution:
 
-### Debian / Ubuntu
+### Debian / Ubuntu / Linux Mint
 ```bash
 sudo apt update
 sudo apt install -y gammu bluez
-
-Arch Linux
-Bash
-
-sudo pacman -S gammu bluez bluez-utils
-
-Fedora
-Bash
-
-sudo dnf install -y gammu bluez
-
-(Note: jadmaker is included with Gammu packages on most distributions).
-2. Bluetooth Pairing
-
-    On your Nokia 6230i, navigate to:
-    Menu > Settings > Connectivity > Bluetooth
-
-        Turn Bluetooth On.
-
-        Set Phone visibility to Shown to all.
-
-    Start the Bluetooth service:
-    Bash
-
-sudo systemctl enable --now bluetooth
-
-Open bluetoothctl to pair and trust the device:
-Bash
-
-bluetoothctl
-
-Inside the bluetoothctl prompt:
-Plaintext
-
-scan on
-
-Locate your Nokia MAC address (e.g., 00:14:A7:69:9B:63), then run:
-Plaintext
-
-    pair 00:14:A7:69:9B:63
-    trust 00:14:A7:69:9B:63
-    exit
-
-    (Enter matching PINs, such as 1234, on both host and handset when prompted).
-
-3. Configuration
-
-Write the Gammu configuration file to ~/.gammurc (replace with your device's MAC address):
-Bash
-
-cat <<EOF> ~/.gammurc
-[gammu]
-device = 00:14:A7:69:9B:63
-connection = bluephonet
-EOF
-
-Verify connectivity:
-Bash
-
-gammu identify
-
-Expected output: Device model (6230i), firmware revision, and IMEI.
-
-    [!NOTE]
-    If bluephonet fails to connect, try editing ~/.gammurc and setting connection = phonetblue or connection = blueobex.
-
-4. Installing Games
-
-Gammu requires both the .jar and an accompanying .jad descriptor file.
-Step 4.1: Generate the .jad Descriptor
-
-Navigate to your game directory and generate the JAD file:
-Bash
-
-cd ~/Downloads
-jadmaker yourgame.jar
-
-Step 4.2: Push to Device
-
-Execute nokiaaddfile using the base name only (omit extensions):
-
-    Install into the Games menu:
-    Bash
-
-gammu nokiaaddfile Game yourgame
-
-Install into the Applications / Collection menu:
-Bash
-
-gammu nokiaaddfile Application yourgame
