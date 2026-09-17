@@ -29,3 +29,102 @@ Using **Gammu** bypasses these bottlenecks by pushing the MIDlet directly to the
 > Keep `.jar` files strictly under **512 KB**. Anything larger will fail to install or launch. Target **208×208** builds to avoid scaling artifacts and runtime out-of-memory errors.
 
 ---
+
+## 1. Prerequisites
+
+Install `gammu` and the BlueZ Bluetooth stack:
+
+### Debian / Ubuntu
+```bash
+sudo apt update
+sudo apt install -y gammu bluez
+
+Arch Linux
+Bash
+
+sudo pacman -S gammu bluez bluez-utils
+
+Fedora
+Bash
+
+sudo dnf install -y gammu bluez
+
+(Note: jadmaker is included with Gammu packages on most distributions).
+2. Bluetooth Pairing
+
+    On your Nokia 6230i, navigate to:
+    Menu > Settings > Connectivity > Bluetooth
+
+        Turn Bluetooth On.
+
+        Set Phone visibility to Shown to all.
+
+    Start the Bluetooth service:
+    Bash
+
+sudo systemctl enable --now bluetooth
+
+Open bluetoothctl to pair and trust the device:
+Bash
+
+bluetoothctl
+
+Inside the bluetoothctl prompt:
+Plaintext
+
+scan on
+
+Locate your Nokia MAC address (e.g., 00:14:A7:69:9B:63), then run:
+Plaintext
+
+    pair 00:14:A7:69:9B:63
+    trust 00:14:A7:69:9B:63
+    exit
+
+    (Enter matching PINs, such as 1234, on both host and handset when prompted).
+
+3. Configuration
+
+Write the Gammu configuration file to ~/.gammurc (replace with your device's MAC address):
+Bash
+
+cat <<EOF> ~/.gammurc
+[gammu]
+device = 00:14:A7:69:9B:63
+connection = bluephonet
+EOF
+
+Verify connectivity:
+Bash
+
+gammu identify
+
+Expected output: Device model (6230i), firmware revision, and IMEI.
+
+    [!NOTE]
+    If bluephonet fails to connect, try editing ~/.gammurc and setting connection = phonetblue or connection = blueobex.
+
+4. Installing Games
+
+Gammu requires both the .jar and an accompanying .jad descriptor file.
+Step 4.1: Generate the .jad Descriptor
+
+Navigate to your game directory and generate the JAD file:
+Bash
+
+cd ~/Downloads
+jadmaker yourgame.jar
+
+Step 4.2: Push to Device
+
+Execute nokiaaddfile using the base name only (omit extensions):
+
+    Install into the Games menu:
+    Bash
+
+gammu nokiaaddfile Game yourgame
+
+Install into the Applications / Collection menu:
+Bash
+
+gammu nokiaaddfile Application yourgame
